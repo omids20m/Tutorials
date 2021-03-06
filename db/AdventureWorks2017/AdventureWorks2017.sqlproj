@@ -146,6 +146,7 @@
     <Folder Include="Production\XMLSchemaCollections\" />
     <Folder Include="Sales\XMLSchemaCollections\" />
     <Folder Include="_Profiles" />
+    <Folder Include="_Scripts" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="HumanResources\Tables\EmployeePayHistory.sql" />
@@ -290,5 +291,6 @@
     <None Include="_Profiles\AdventureWorks2017_PreProd.publish.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="_Profiles\AdventureWorks2017_DevTest.publish.xml" />
   </ItemGroup>
 </Project>
