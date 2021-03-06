@@ -284,7 +284,11 @@
     <Build Include="ExtendedProperties.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="_Profiles\AdventureWorks2017.publish.xml" />
-    <None Include="_Profiles\AdventureWorks2017_1.publish.xml" />
+    <None Include="_Profiles\AdventureWorks2017_Prod.publish.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="_Profiles\AdventureWorks2017_PreProd.publish.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
