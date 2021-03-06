@@ -147,6 +147,7 @@
     <Folder Include="Sales\XMLSchemaCollections\" />
     <Folder Include="_Profiles" />
     <Folder Include="_Scripts" />
+    <Folder Include="_Compare" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="HumanResources\Tables\EmployeePayHistory.sql" />
@@ -292,5 +293,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="_Profiles\AdventureWorks2017_DevTest.publish.xml" />
+    <None Include="_Compare\SqlSchemaCompare1.scmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <RefactorLog Include="AdventureWorks2017.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="_Scripts\Script.PostDeployment1.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="_Scripts\Script.PreDeployment1.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="NewInstallation">
+      <DefaultValue>False</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
   </ItemGroup>
 </Project>

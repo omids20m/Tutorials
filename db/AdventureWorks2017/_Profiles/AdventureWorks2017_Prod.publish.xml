@@ -3,9 +3,14 @@
   <PropertyGroup>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseName>AdventureWorks2017</TargetDatabaseName>
-    <DeployScriptFileName>AdventureWorks2017_1.sql</DeployScriptFileName>
+    <DeployScriptFileName>AdventureWorks2017.sql</DeployScriptFileName>
     <TargetConnectionString>Data Source=193.151.128.222;Persist Security Info=False;User ID=sa;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False</TargetConnectionString>
     <ProfileVersionNumber>1</ProfileVersionNumber>
     <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
   </PropertyGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="NewInstallation">
+      <Value>False</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
 </Project>
