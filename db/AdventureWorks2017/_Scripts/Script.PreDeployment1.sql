@@ -12,6 +12,7 @@
 
 PRINT 'Executing pre deployment script ...'
 
+/*
 if('$(NewInstallation)' = 'True')
 BEGIN
     PRINT 'NewInstallation variable is True'
@@ -23,3 +24,4 @@ BEGIN
     PRINT 'NewInstallation variable is False'
 END
 
+*/

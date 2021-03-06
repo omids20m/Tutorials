@@ -304,10 +304,4 @@
   <ItemGroup>
     <PreDeploy Include="_Scripts\Script.PreDeployment1.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <SqlCmdVariable Include="NewInstallation">
-      <DefaultValue>False</DefaultValue>
-      <Value>$(SqlCmdVar__1)</Value>
-    </SqlCmdVariable>
-  </ItemGroup>
 </Project>
