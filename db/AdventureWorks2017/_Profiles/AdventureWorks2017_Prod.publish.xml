@@ -8,9 +8,4 @@
     <ProfileVersionNumber>1</ProfileVersionNumber>
     <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
   </PropertyGroup>
-  <ItemGroup>
-    <SqlCmdVariable Include="NewInstallation">
-      <Value>False</Value>
-    </SqlCmdVariable>
-  </ItemGroup>
 </Project>
