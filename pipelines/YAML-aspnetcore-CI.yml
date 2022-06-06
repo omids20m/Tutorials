@@ -1,0 +1,51 @@
+name: $(Date:yyyyMMdd)$(Rev:.r) 
+
+trigger: none 
+
+pool: 
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'src/dotnetframework/WebApplication1.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  restoreBuildProjects: '**/dotnetcore/WebCore1/*.csproj'
+  testProjects: '**/*[Tt]ests/*.csproj'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: '$(restoreBuildProjects)'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: '$(restoreBuildProjects)'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '$(testProjects)'
+    arguments: '--configuration $(buildConfiguration)'
+  enabled: false
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: '$(restoreBuildProjects)'
+    arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) /p:EnvironmentName=production'
+    modifyOutputPath: false
+
+#- task: PublishBuildArtifacts@1
+#  inputs:
+#    PathtoPublish: '$(build.artifactstagingdirectory)'
+#    ArtifactName: 'drop'
+
+- publish: $(build.artifactstagingdirectory)
+  artifact: drop

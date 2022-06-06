@@ -1,0 +1,39 @@
+trigger: none
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'db/AdventureWorks2017/AdventureWorks2017.sln'
+  buildPlatform: 'any cpu'
+  buildConfiguration: 'release'
+
+#resources:
+#  repositories: 
+#  - repository: TitorialsRepo
+#    type: GitHub
+#    connection: 'GitHub'
+#    source: omids20m/Tutorials
+
+steps:
+- task: VSBuild@1
+  displayName: 'Build solution db/AdventureWorks2017/AdventureWorks2017.sln'
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(system.defaultworkingdirectory)'
+    Contents: '**\bin\$(buildConfiguration)\**'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+

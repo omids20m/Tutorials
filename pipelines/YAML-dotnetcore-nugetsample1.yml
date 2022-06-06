@@ -1,0 +1,37 @@
+name: 1.0$(Rev:.r)
+
+trigger: none
+
+pool: 
+  vmImage: 'windows-latest' 
+  demands:
+  - msbuild
+  - visualstudio
+
+steps:
+- task: DotNetCoreCLI@1
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    projects: '**/dotnetcore/NugetSample/ClassLibraryCore1/ClassLibraryCore1.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: '**/dotnetcore/NugetSample/ClassLibraryCore1/ClassLibraryCore1.csproj'
+    arguments: ' --configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet pack Core'
+  inputs:
+    command: pack
+    packagesToPack: '**/dotnetcore/NugetSample/ClassLibraryCore1/ClassLibraryCore1.csproj'
+    versioningScheme: byBuildNumber
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'c3cf7a58-16bd-4781-a0d6-d81618c1ccbb/b83ff2f4-4169-47f6-af8b-dcdc52b67895'

@@ -1,0 +1,93 @@
+# reference https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=example%2Cparameter-schema
+
+name: $(Date:yyyyMMdd)$(Rev:.r) # build numbering format
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema%2Cparameter-schema#triggers
+trigger: none # [ string ] # list of branch names 
+
+#trigger:
+#- main
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml
+
+pool: # MyPrivatePool # To use a private pool with no demands:
+  #name: string  # name of the pool to run this job in
+  vmImage: 'windows-latest' # ubuntu-latest | macOS-latest | windows-latest 
+  demands:
+  - msbuild
+  - visualstudio
+
+variables:
+  solution: 'src/dotnetframework/WebApplication1.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  artifactName: 'drop'
+
+stages:
+- stage: Build_Stage
+  jobs: 
+  - job: Job_1 # name of the job (A-Z, a-z, 0-9, and underscore)
+    displayName: Job 1 - Continuous Integration Job # friendly name to display in the UI
+    #dependsOn: string | [ string ]
+    #condition: succeeded()
+    #continueOnError: false  # 'true' if future jobs should run even if this job fails; defaults to 'false'
+    workspace:
+      clean: outputs
+    steps:
+    - script: echo Hello CI CD using Azure DevOps!
+      displayName: Say hello in script
+
+    #- pwsh: |
+    #  Write-Host "Multiline script line1."
+    #  Write-Host "Multiline script line2."
+
+    #- bash: |
+    #  echo script in bash line1
+    #  echo script in bash line2
+ 
+    - task: NuGetToolInstaller@1
+      displayName: 'Use NuGet'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore'
+      inputs:
+        restoreSolution: '$(solution)'
+
+    - task: VSBuild@1
+      displayName: 'Build solution'
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+        clean: true
+
+    - task: VSTest@2
+      displayName: 'Test Assemblies'
+      inputs:
+        testAssemblyVer2: |
+         **\$(buildConfiguration)\*test*.dll
+         !**\obj\**
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+      continueOnError: true
+      enabled: true
+
+    - task: PublishSymbols@2
+      displayName: 'Publish symbols path'
+      inputs:
+        SearchPattern: '**\bin\**\*.pdb'
+        SymbolServerType: TeamServices
+      continueOnError: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)'
+        ArtifactName: '$(artifactName)'
+      condition: succeededOrFailed()
+- stage: After_Build_Stage
+  jobs:
+  - job: Job_After_1
+    steps:
+      - script: echo after 1 is running

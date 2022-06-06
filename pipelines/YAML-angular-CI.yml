@@ -1,0 +1,34 @@
+name: $(Date:yyyyMMdd)$(Rev:.r) 
+
+trigger: none 
+
+#pool:
+#  name: Default
+#  demands: npm
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    workingDir: 'src/angular/my-app'
+    verbose: false
+
+- task: Npm@1
+  displayName: 'npm custom'
+  inputs:
+    command: custom
+    workingDir: 'src/angular/my-app'
+    verbose: false
+    customCommand: 'run-script build'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    SourceFolder: 'src/angular/my-app/dist'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
