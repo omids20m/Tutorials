@@ -3,7 +3,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 trigger: none 
 
 pool: 
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2019'
 
 variables:
   solution: 'src/dotnetframework/WebApplication1.sln'
