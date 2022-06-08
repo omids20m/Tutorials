@@ -1,4 +1,4 @@
-#version 4.9.1
+#version 4.9.1.1
 <#
 .SYNOPSIS
     Service utils
@@ -66,7 +66,7 @@ param(
 
     #[Alias("ignore")]
     [Parameter()]
-    [bool] $ignoreStopIfNotExists=$false #$false #if set to false show error The specified service does not exist as an installed service
+    [bool] $ignoreStopIfNotExists=$true #$false #if set to false show error The specified service does not exist as an installed service
      ) 
 
 $isRemote = 1
