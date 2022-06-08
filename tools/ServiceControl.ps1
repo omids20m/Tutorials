@@ -1,92 +1,63 @@
-#version 3.1.1
-<#
-.SYNOPSIS
-    Service utils
-.DESCRIPTION
-    Created by Omid Shariati http://HiDevOps.com http://OmidShariati.com
-.PARAMETER machineName
-    Specifies target machine name.
-#>
-[CmdletBinding()]
+#version 3.2.0.1
 param( 
-    #[Alias("a")]
     [Parameter(Mandatory=$true)]
-    [ValidateSet('start','stop','createorupdate')] #...,config
-    [string] $action = "",
-	
-    #[Alias("machine")]
+    #[ValidateSetAttribute('start','stop','createorupdate')]
+    [string] $action = "", # [start,stop,createorupdate,config]
+
     [Parameter()]
-    [string] $machineName = ".",
+    [string] $server = ".",
 
-    #[Alias("user")]
-    [Parameter(HelpMessage="Remote machine Username")]
-    [string] $username ="",
+    [Parameter()]
+    [string] $user ="",
 
-    #[Alias("pass")]
-    [Parameter(HelpMessage="Remote machine Password")]
+    [Parameter()]
     [string] $password ="",
 
-    #Service name. Accepts comma separated for start/stop actions
-    #[Alias("name")]
     [Parameter(Mandatory=$true)]
-    [string[]] $serviceName = "",
+    [string[]] $serviceName = "", #srv1,srv2
 
-    [Parameter(HelpMessage="Process name. Accepts comma separated for stop actions")]
-    #[Alias("process")]
-    [string[]] $processName = "", #Accepts comma separated for stop action
+    [Parameter()]
+    [string[]] $processName = "", #omid.srv1.exe,omid.srv2.exe
 
-    #[Alias("count")]
-    [Parameter(HelpMessage="Number of tries for start/stop action if not succcessfull")]
-    [int] $trycount = 5, #for start and stop actions
+    [Parameter()]
+    [string] $displayName="", #Asa Session-Timeout Manager
 
-    #[Alias("delay")]
-    [Parameter(HelpMessage="Delay between tries in second for start/stop actions")]
+    [Parameter()]
+    [string] $binaryPath="", #D:\Asa\Agents\Current\SessionTimeoutManager\Asa.Online.SessionTimeoutManager.exe
+
+    [Parameter()]
+    [string] $dependsOn="", #dependsOn
+
+    [Parameter()]
+    #[Parameter(HelpMessage="Start type for the service [start=boot, system, auto, demand, disabled] (default=auto)")]
+    #[ValidateSet('start','boot','system','auto','demand','disabled')]
+    [string] $startType = "", #Option values include types used by drivers.(default = demand)
+
+    [Parameter()]
+    [string] $description="",
+
+    [Parameter()]
+    [int] $trycount = 5,
+
+    [Parameter()]
     [int] $delayBetweenTries = 10,
 
-    #[Alias("display")]
-    [Parameter(HelpMessage="Service display name for createorupdate action")]
-    [string] $serviceDisplayName = "", 
-    
-    #[Alias("path")]
-    [Parameter(HelpMessage="Binary path of service to be created of updated. for createorupdate action")]
-    [string] $binaryPath = "",  #"D:\Agents\Current\Text.exe",
-    
-    #[Alias("depends")]
-    [Parameter(HelpMessage="Name of services in csv that this service depends on. for createorupdate action")]
-    [string] $servicesDependedOn = "",
-
-    #[Alias("start")]
-    [Parameter(HelpMessage="Start type for the service [start=boot, system, auto, demand, disabled] (default=auto)")]
-    [ValidateSet('start','boot','system','auto','demand','disabled')]
-    [string] $startType = "auto", #Option values include types used by drivers.(default = demand)
-    
-    #[Alias("desc")]
-    #[Parameter(HelpMessage="Service description"). for createorupdate action]
-    #[string] $newServiceDescription = "", #for createorupdate action
-	
-    #[Alias("ignore")]
     [Parameter()]
-    [bool] $ignoreStopIfNotExists= $true #$false #if set to false show error The specified service does not exist as an installed service
+    [bool] $ignoreStopIfNotExists = $true #if set to false show error The specified service does not exist as an installed service
      ) 
 
 $isRemote = 1
-if($machineName -eq "" -or $machineName -eq "." -or $machineName -eq "local")
+if($server -eq "" -or $server -eq "." -or $server -eq "local")
 {
-    $isRemote = 0
-    $machineName = "\\." # ooni ke local ghabool mikone
+  $isRemote = 0
+  $server = "\\." # ooni ke local ghabool mikone
 }
-
-function StartService()
+function StartOneOrMoreServices()
 {
-<#
-
-.SYNOPSIS
-Start a service on local or remote machine.
-
-#>
+   
     if($isRemote -eq 1)
     {
-        net use $machineName\IPC$ /user:$username $password
+        net use $server\IPC$ /user:$user $password
     }
     
     if($LASTEXITCODE -eq 1326) {
@@ -98,67 +69,75 @@ Start a service on local or remote machine.
 
     foreach($service in $serviceName.Split(","))
     {
-        $errorCode = 999
-
-        for($i=0; ($i -le $trycount) -and ($errorCode -ne 0); $i++)
-        {
-            Write-Host "Service: '$service' i: '$i' trycount: '$trycount' LastExitCode: '$LASTEXITCODE' errorCode: '$errorCode'"
-            if($i -ne 0)
-            {
-                Write-Host "Waiting 10 seconds for starting service ..."
-                Start-Sleep -s $delayBetweenTries
-            }
-            $result = sc.exe $machineName start $service #Start Service
-            $errorCode = $LASTEXITCODE
-            if($errorCode -eq 1056) {
-                Write-Host "Starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: An instance of the service is already running" -foregroundcolor green
-                break;
-            }
-        }
-        if($errorCode -eq 0)
-        {
-            Write-Host "The '$service' service on '$machineName' server started successfully" -foregroundcolor green
-        }
-        elseif ($errorCode -eq 1053)
-        {
-            Write-Error "An error occurred in starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service did not respond to the start or control request in a timely fashion"
-        }
-        elseif ($errorCode -eq 1056)
-        {
-            Write-Host "An error occurred in starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: An instance of the service is already running"
-        }
-        elseif ($errorCode -eq 1060)
-        {
-            Write-Error "An error occurred in starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service"
-        }
-        elseif ($errorCode -eq 1061)
-        {
-            Write-Error "An error occurred in starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service cannot accept control messages at this time"
-        }
-        elseif ($errorCode -eq 1062)
-        {
-            Write-Host "An error occurred in starting service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service has not been started"
-        }
-        else
-        {
-            Write-Error "an error occurred in starting service '$service' on server '$machineName'. errorcode: '$errorCode'"
-        }
+		StartService $service $trycount $delayBetweenTries
     }
-    if($isRemote -eq 1)
-    {
-        net use $machineName\IPC$ /delete
-    }
+	if($isRemote -eq 1)
+	{
+		net use $server\IPC$ /delete
+	}
 }
+#End function StartOneOrMoreServices()
 
-function StopService()
-{
+# StartService works only for local connections
+function StartService($service, $trycount, $delayBetweenTries){
+
+	$errorCode = 999
+
+	for($i=0; ($i -le $trycount) -and ($errorCode -ne 0); $i++)
+	{
+		Write-Host "Service: '$service' i: '$i' trycount: '$trycount' LastExitCode: '$LASTEXITCODE' errorCode: '$errorCode'"
+		if($i -ne 0)
+		{
+			Write-Host "Waiting $delayBetweenTries seconds for starting service ..."
+			Start-Sleep -s $delayBetweenTries
+		}
+		$result = sc.exe $server start $service #Start Service
+		$errorCode = $LASTEXITCODE
+
+		if($errorCode -eq 1056) {
+			Write-Host "Starting service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: An instance of the service is already running" -foregroundcolor Yellow
+			break;
+		}
+		elseif($errorCode -eq 0)
+		{
+			Write-Host "The '$service' service on '$server' server started successfully" -foregroundcolor green
+			break;
+		} # else an ERROR occured
+		elseif ($errorCode -eq 1053)
+		{
+			Write-Error "An error occurred in starting service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service did not respond to the start or control request in a timely fashion"
+		}
+		elseif ($errorCode -eq 1060)
+		{
+			Write-Error "An error occurred in starting service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service"
+		}
+		elseif ($errorCode -eq 1061)
+		{
+			Write-Error "An error occurred in starting service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service cannot accept control messages at this time"
+		}
+		elseif ($errorCode -eq 1062)
+		{
+			Write-Error "An error occurred in starting service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service has not been started"
+		}
+		else
+		{
+			Write-Error "an error occurred in starting service '$service' on server '$server'. errorcode: '$errorCode'"
+			break;
+		}
+	}
+}
+#End function StartService()
+
+function StopOneOrMoreService()
+ {
     if($serviceName.Count -ne $processName.Count)
     {
         Write-Error "Invalid parameters. services count does not equal to processes count"
     }
+
     if($isRemote -eq 1)
     {
-      net use $machineName\IPC$ /user:$username $password
+      net use $server\IPC$ /user:$user $password
     }
     
     if($LASTEXITCODE -eq 1326) {
@@ -167,165 +146,167 @@ function StopService()
     elseif($LASTEXITCODE -ne 0){
         Write-Host "System error $errorCode has occurred."
     }
-    
+        
     [string[]] $servicesArray = $serviceName.Split(",")
     [string[]] $processesArray = $processName.Split(",")
-    
+        
     for($j = 0 ; $j -lt $servicesArray.Count; $j++)
     {
         [string] $service = $servicesArray.Get($j)
         [string] $process = $processesArray.Get($j)
-            
-        $errorCode = 999
-    
-        for($i=0; $i -le $trycount; $i++)
-        {
-            Write-Host "Service: '$service' i: '$i' trycount: '$trycount' LastExitCode: '$LASTEXITCODE' errorCode: '$errorCode'"
-            if($i -ne 0)
-            {
-                Write-Host "Waiting 5 seconds for stopping service ..."
-                Start-Sleep -s $delayBetweenTries
-            }
-            $result = sc.exe $machineName stop $service #Stop Service
-            $errorCode = $LASTEXITCODE
-            if($errorCode -eq 0) {
-                Write-Host "Stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The operation completed successfully." -foregroundcolor green
-                break;
-            }
-            if($errorCode -eq 1062) {
-                Write-Host "Stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service has not been started" -foregroundcolor Yellow
-                break;
-            }
-            if ($errorCode -eq 1060)
-            {
-                Write-Host "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service" -foregroundcolor Yellow
-                break;
-            }
-        }
-        if($errorCode -eq 0)
-        {
-            Write-Host "The '$service' service on '$machineName' server stopped successfully" -foregroundcolor green
-        }
-        elseif ($errorCode -eq 1062)
-        {
-            Write-Host "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service has not been started" -foregroundcolor red
-        }
-        elseif ($ignoreStopIfNotExists -eq $true and $errorCode -eq 1060)
-        {
-            Write-Host "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service" -foregroundcolor red
-        }
-        else
-        {
-            if ($errorCode -eq 1053)
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service did not respond to the start or control request in a timely fashion"
-            }
-            elseif ($errorCode -eq 1056)
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: An instance of the service is already running"
-            }
-            elseif ($ignoreStopIfNotExists -eq $false and $errorCode -eq 1060)
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service" -foregroundcolor red
-            }
-            elseif ($errorCode -eq 1061)
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: The service cannot accept control messages at this time"
-            }
-            elseif ($errorCode -eq 2242)
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE errormessage: password expired"
-            }
-            else
-            {
-                Write-Error "An error occurred in stopping service '$service' on server '$machineName'. errorcode: $LASTEXITCODE"
-            }
-        }
+		
+		StopService $service $trycount $delayBetweenTries $ignoreStopIfNotExists
+		
+		if($isRemote -eq 1)
+		{
+			#Do Nothing
+		}
+		else
+		{
+			StopProcess $process $trycount $delayBetweenTries $ignoreStopIfNotExists
+		}
     }
-
-    if($isRemote -eq 1)
-    {
-	  #todo kill remote process if exists
-      net use $machineName\IPC$ /delete
-    }
-	else
+	 
+	if($isRemote -eq 1)
 	{
-        #Check process if still running
-        $proccessIsRunning = Get-Process $process -ErrorAction silentlycontinue
-        if($proccessIsRunning -ne $null)
-        {
-            for($i=1; $i -le $trycount; $i++)
-            {
-                Write-Host "Waiting $delayBetweenTries seconds for closing. iteration: $i of $trycount ..."
-                Start-Sleep -s $delayBetweenTries
-
-                $proccessIsRunning = Get-Process $process -ErrorAction silentlycontinue
-                if($proccessIsRunning -eq $null)
-                {
-                    break;
-                }
-                else
-                {
-                    if($i -eq $trycount)
-                    {
-                        #Kill process if exists
-                        Write-Host "Killing Proccess $process ..."
-                        Stop-Process -Name $process
-                    }
-                }
-            }
-        }
-    }
+		net use $server\IPC$ /delete
+	}
     return $errorCode;
+
+}
+#End function StopOneOrMoreService()
+
+
+# StopService works only for local connections
+function StopService($service, $trycount, $delayBetweenTries, $ignoreStopIfNotExists)
+{
+	$errorCode = 999
+	for($i=0; $i -le $trycount; $i++)
+	{
+		Write-Host "Service: '$service' i: '$i' trycount: '$trycount' LastExitCode: '$LASTEXITCODE' errorCode: '$errorCode'"
+		if($i -ne 0)
+		{
+			Write-Host "Waiting 5 seconds for stopping service ..."
+			Start-Sleep -s $delayBetweenTries
+		}
+		$result = sc.exe $server stop $service #Stop Service
+		$errorCode = $LASTEXITCODE
+		if($errorCode -eq 0) {
+			Write-Host "Stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The operation completed successfully." -foregroundcolor green
+			break;
+		}
+		elseif($errorCode -eq 1062) {
+			Write-Host "Stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service has not been started" -foregroundcolor Yellow
+			break;
+		}
+		elseif ($ignoreStopIfNotExists -eq 1 -and $errorCode -eq 1060)
+		{
+			Write-Host "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service" -foregroundcolor Yellow
+			break;
+		}
+		else
+		{
+			if ($errorCode -eq 1053)
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service did not respond to the start or control request in a timely fashion"
+			}
+			elseif ($errorCode -eq 1056)
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: An instance of the service is already running"
+			}
+			elseif ($ignoreStopIfNotExists -eq 0 -and $errorCode -eq 1060)
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The specified service does not exist as an installed service"
+			}
+			elseif ($errorCode -eq 1061)
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: The service cannot accept control messages at this time"
+			}
+			elseif ($errorCode -eq 2242)
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE errormessage: password expired"
+			}
+			else
+			{
+				Write-Error "An error occurred in stopping service '$service' on server '$server'. errorcode: $LASTEXITCODE"
+			}
+		} 
+	}
+}
+#End function StopService()
+
+function StopProcess($process, $trycount, $delayBetweenTries, $ignoreStopIfNotExists)
+{
+	#Check Service is still is running
+	#fe'lan remote ra check nemikonim
+	$proccess = Get-Process $process -ErrorAction silentlycontinue
+	if($proccess -ne $null)
+	{
+		for($i=1; $i -le $trycount; $i++)
+		{
+			Write-Host "Waiting $delayBetweenTries seconds for closing [$process] process || TryCount : $i of  $trycount ..."
+			Start-Sleep -s $delayBetweenTries
+			$proccess = Get-Process $process -ErrorAction silentlycontinue
+
+			if($proccess -eq $null)
+			{
+				break;
+			}
+			elseif($i -eq $trycount)
+			{
+				#Stop-Process -Name "mmc" #todo need full test
+
+				#Kill the process if still exists
+				Write-Host "Kill the process [$process] ... "
+				Stop-Process -Name $process -Force
+			}
+		}
+	}
 }
 
 function CreateOrUpdate()
 {
-    #Check service is installed-if service installed must return 0 (zero) errorcode
-    sc.exe query $serviceName
+    #فراخوانی استاپ کردن ویندوز سرویس که نام سرویس و نام پراسس آن باید ست شود
+    #Check Service Is Installed-if service installed must return 0 (zero) errorcode
+    
+    sc.exe query $serviceName 
     $errorcode=$LASTEXITCODE
-    if($errorcode -ne 1060)#errorcode 1060 yani service nasb nist
+
+    if($errorcode -eq 1060) #errorcode 1060 yani service nasb nist
     {
-        #$stopServiceResult=StopService
-        #
-        #if($stopServiceResult -eq 0) #Is Stopped
-        #{
-            if($servicesDependedOn -ne "")
-            {
-                sc.exe config $serviceName binPath="$binaryPath" start= $startType DisplayName="$serviceDisplayName" depend=$servicesDependedOn
-            }
-            else
-            {
-                sc.exe config $serviceName binPath="$binaryPath" start= $startType DisplayName="$serviceDisplayName"
-                $error=$LASTEXITCODE
-            }
-            #if($error -eq 0)
-            #{
-            #    StartService
-            #}  
-        #}
-    }
-    else
-    {
-        if($servicesDependedOn -ne "")
+        if($dependsOn -ne "")
         {
-            sc.exe create $serviceName binPath="$binaryPath" start= $startType DisplayName="$serviceDisplayName" depend=$servicesDependedOn
+            sc.exe create $serviceName  binPath="$binaryPath" start= $startType DisplayName="$displayName" depend=$dependsOn
         }
         else
         {
-            sc.exe create $serviceName binPath="$binaryPath" start= $startType DisplayName="$serviceDisplayName"
+            sc.exe create $serviceName  binPath="$binaryPath" start= $startType DisplayName="$displayName"
         }
-        $newError=$LASTEXITCODE
+        $createError=$LASTEXITCODE
+    }
+    else
+    {
+        if($dependsOn -ne "")
+        {
+            sc.exe config $serviceName  binPath="$binaryPath" start= $startType DisplayName="$displayName" depend=$dependsOn
+        }
+        else
+        {
+            sc.exe config $serviceName  binPath="$binaryPath" start= $startType DisplayName="$displayName"
+            $error=$LASTEXITCODE
+        }
     }
 }
+#End function CreateOrUpdate()
+
 
 if($action -eq "start")
 {
-    StartService
+	StartOneOrMoreServices
 }
 elseif($action -eq "stop")
 {
-    StopService
+    StopOneOrMoreService
 }
 elseif($action -eq "createorupdate")
 {
@@ -333,10 +314,9 @@ elseif($action -eq "createorupdate")
 } 
 else
 {
-    Write-Error "Action is not defined";
+    Write-Error "Action '$action' is not defined";
 }
-
-
+ 
 
 #Problem
 #[SC] OpenSCManager FAILED 5:
@@ -358,5 +338,3 @@ else
 #Access Administrator account and follow the steps 1 and 2 and try to run the command.
 # 
 #Also let us know if you are connected to a network or a domain network.
-
-#Created by Omid Shariati http://HiDevOps.com http://OmidShariati.com
