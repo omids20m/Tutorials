@@ -17,9 +17,11 @@ jobs:
       packageName: AdventureWorks2019
       tempServerTypeBuild: sqlServer
       tempServerNameBuild: .\Sql2019
-      tempDatabaseNameBuild: AW2019
+      tempDatabaseNameBuild: AW2019_Build
       tempTrustServerCertificateBuild: true
       authMethodBuild: sqlServerAuth
       usernameBuild: sa
       passwordBuild: $(SqlPassword)
-      nugetPackageVersionUseBuildId: true
+      nugetPackageVersionSelector: 'Specific'
+      nugetPackageVersion: '1.0'
+      requiredVersionOfDlma: 'latest'
