@@ -37,6 +37,7 @@
     <SyncOptionIgnoreUsersPermissionsAndRoleMemberships>True</SyncOptionIgnoreUsersPermissionsAndRoleMemberships>
     <DeployChangesExecutionOrder>d1f940ee-e0d6-59f0-a77d-d9c0c212d3f4|Programmable Objects\dbo\Stored Procedures\uspPrintError.sql;b626f028-dc9b-54e7-9b36-6810092c3f64|Programmable Objects\dbo\Stored Procedures\uspLogError.sql;1283ce97-371c-5833-9346-c7c25769f929|Programmable Objects\HumanResources\Stored Procedures\uspUpdateEmployeeHireInfo.sql;ecf74ec8-fdd4-520b-bf23-d875d9158861|Programmable Objects\HumanResources\Stored Procedures\uspUpdateEmployeeLogin.sql;2b483dab-b69f-56d7-88c8-640ee915791c|Programmable Objects\HumanResources\Stored Procedures\uspUpdateEmployeePersonalInfo.sql</DeployChangesExecutionOrder>
     <TargetDatabaseSet>True</TargetDatabaseSet>
+    <IncludeObjectsInDataSync>Table=[Person].[AddressType]</IncludeObjectsInDataSync>
   </PropertyGroup>
   <!-- SQL CHANGE AUTOMATION OFFLINE SCHEMA MODEL OPTIONS -->
   <PropertyGroup>
