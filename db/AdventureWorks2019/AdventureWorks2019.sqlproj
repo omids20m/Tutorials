@@ -353,6 +353,7 @@
     <None Include="Schema-Model\Sales\Types\XML Schema Collections\StoreSurveySchemaCollection.sql" />
     <None Include="Unsupported\Functions\ufnLeadingZeros.sql" />
     <None Include="Migrations\1.1.0-Changes\readme.txt" />
+    <None Include="Migrations\1.1.0-Changes\001_20220719-0324_o.shariati.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Pre-Deployment\01_Initialize_Deployment.sql" />
