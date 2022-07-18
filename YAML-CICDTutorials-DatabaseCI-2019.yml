@@ -1,0 +1,22 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: RedgateSqlChangeAutomationBuild@4
+  inputs:
+    operation: 'Build SQL Change Automation Project'
+    sqlProj: 'db\AdventureWorks2019\AdventureWorks2019.sqlproj'
+    packageName: 'AdventureWorks2019'
+    tempServerTypeBuild: 'localDB'
+    nugetPackageVersionSelector: 'Specific'
+    nugetPackageVersion: '1.0'
+    nugetPackageVersionUseBuildId: true
+    requiredVersionOfDlma: 'latest'
