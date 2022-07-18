@@ -1,5 +1,7 @@
 # Variable 'SqlPassword' was defined in the Variables tab
 
+trigger: none
+
 jobs:
 - job: Job_1
   displayName: Agent job 1
