@@ -355,6 +355,8 @@
     <None Include="Migrations\1.1.0-Changes\readme.txt" />
     <None Include="Migrations\1.1.0-Changes\001_20220719-0324_o.shariati.sql" />
     <None Include="Migrations\1.1.0-Changes\002_20220719-0921_o.shariati.sql" />
+    <None Include="Migrations\1.1.0-Changes\003_20220719-1135_o.shariati.sql" />
+    <None Include="Schema-Model\dbo\Tables\_Temp_Table1.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Pre-Deployment\01_Initialize_Deployment.sql" />
