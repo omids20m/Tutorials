@@ -1,7 +1,6 @@
 # Variable 'SqlPassword' was defined in the Variables tab
 
-trigger: 
-  branches: main
+trigger: none
 
 jobs:
 - job: Job_1
