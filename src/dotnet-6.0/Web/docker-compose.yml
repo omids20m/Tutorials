@@ -1,0 +1,32 @@
+﻿version: '3'
+networks:
+  $(ServerName):
+    external: True
+services:
+  SERVICE_NAME:
+    image: $(NexusRepoURL)/tinyprojects/SERVICE_NAME:$(BuildNumber)-$(BranchName)
+    container_name: SERVICE_NAME
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "4"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: '512M'
+        reservations:
+          cpus: "0.1"
+          memory: '10M'
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=prod
+    volumes:
+      - /var/log/$(ServiceName):/var/log
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8083:80
+      - 8443:443
+    networks:
+      - $(ServerName)
