@@ -32,7 +32,7 @@ stages:
       displayName: List SourcesDirectory
       inputs:
         targetType: 'inline'
-        script: ll $(Build.SourcesDirectory)
+        script: ls $(Build.SourcesDirectory)
     - task: Bash@3
       displayName: Show docker-compose.yml content
       inputs:
