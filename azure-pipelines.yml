@@ -29,10 +29,10 @@ stages:
     #    targetType: 'inline'
     #    script: 'sudo docker login $(NexusRepoURL) --username $(Username) --password $(Password)'
     - task: Bash@3
-      displayName: Show docker-compose.yml content
+      displayName: List SourcesDirectory
       inputs:
         targetType: 'inline'
-        script: ll '$(Build.SourcesDirectory)'
+        script: ll $(Build.SourcesDirectory)
     - task: Bash@3
       displayName: Show docker-compose.yml content
       inputs:
