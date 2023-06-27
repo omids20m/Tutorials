@@ -37,7 +37,7 @@ stages:
       displayName: Show docker-compose.yml content
       inputs:
         targetType: 'inline'
-        script: cat '$(Build.SourcesDirectory)/src/dotnet-6.0/docker-compose.yml'
+        script: cat '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml'
     - task: Docker@2
       displayName: Build an image
       inputs:
