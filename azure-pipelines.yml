@@ -32,12 +32,39 @@ stages:
       displayName: List SourcesDirectory
       inputs:
         targetType: 'inline'
-        script: ls $(Build.SourcesDirectory)/src
+        script: ls $(Build.SourcesDirectory)/src/dotnet-6.0/Web
     - task: Bash@3
       displayName: Show docker-compose.yml content
       inputs:
         targetType: 'inline'
         script: cat '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml'
+    - task: Bash@3
+      displayName: Replace docker compose variables SERVICE_NAME
+      inputs:
+        targetType: 'inline'
+        script: sudo sed -i 's/SERVICE_NAME/my_service_1/' '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml' 
+    - task: Bash@3
+      displayName: Replace docker compose variables REPO_URL
+      inputs:
+        targetType: 'inline'
+        script: sudo sed -i 's/REPO_URL/http:\/\/omid.ddns.net:8081/' '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml' 
+    - task: Bash@3
+      displayName: Replace docker compose variables IMAGE_NAME
+      inputs:
+        targetType: 'inline'
+        script: sudo sed -i 's/IMAGE_NAME/nginx/' '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml'  
+    - task: Bash@3
+      displayName: Replace docker compose variables IMAGE_TAG
+      inputs:
+        targetType: 'inline'
+        script: sudo sed -i 's/IMAGE_TAG/dev/' '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml' 
+
+    - task: Bash@3
+      displayName: Show docker-compose.yml content
+      inputs:
+        targetType: 'inline'
+        script: cat '$(Build.SourcesDirectory)/src/dotnet-6.0/Web/docker-compose.yml'
+
     - task: Docker@2
       displayName: Build an image
       inputs:
