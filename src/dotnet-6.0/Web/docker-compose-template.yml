@@ -1,32 +1,18 @@
 ﻿version: '3'
-networks:
-  ${NETWORK_NAME}$:
-    external: True
+#networks:
+  #network1:
+  #  external: True
 services:
-  SERVICE_NAME:
-    image: REPO_URL/IMAGE_NAME:IMAGE_TAG
-    container_name: SERVICE_NAME
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m"
-        max-file: "4"
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: '512M'
-        reservations:
-          cpus: "0.1"
-          memory: '10M'
+  nginx-service:
+    image: web:dev
+    container_name: nginx-web-container
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=prod
-    volumes:
-      - /var/log/SERVICE_NAME:/var/log
-      - /etc/localtime:/etc/localtime:ro
+    #volumes:
+    #  - ./nginxhtml:/usr/share/nginx/html
     ports:
-      - 8083:80
+      - 8080:80
       - 8443:443
-    networks:
-      - NETWORK_NAME
+    #networks:
+    #  - network1
