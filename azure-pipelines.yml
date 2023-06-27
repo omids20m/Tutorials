@@ -1,0 +1,38 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'sudo docker login $(NexusRepoURL) --username $(Username) --password $(Password)'
+    - task: Bash@3
+      displayName: Show docker-compose.yml content
+      inputs:
+        targetType: 'inline'
+        script: cat '$(Build.SourcesDirectory)'
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        containerRegistry: 'omid.ddns.net-docker-hosted'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
